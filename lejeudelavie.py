@@ -1,7 +1,6 @@
 import pygame
 import random
 import threading
-from pypresence import Presence
 import time
 
 # Paramètres de la fenêtre
@@ -45,28 +44,12 @@ def spawn_random_cells():
 # Placer des cellules au démarrage
 spawn_random_cells()
 
-# Connexion à Discord Rich Presence
-client_id = "1353185581475303424"  # Remplace par l'ID de ton application Discord
-rpc = Presence(client_id)
-rpc.connect()
-
 # Paramètres du jeu
 FPS = 10  # Initialisation de FPS
 clock = pygame.time.Clock()
 
 # Mode dieu activé ?
 god_mode = False
-
-# Met à jour le RPC toutes les 15 secondes
-def update_rich_presence():
-    alive_cells = sum(sum(row) for row in grid)  # Compte les cellules vivantes
-    rpc.update(
-        state="En train de jouer au Jeu De La Vie",  # État du joueur
-        details=f"Cellules vivantes : {alive_cells}",  # Détails
-        start=time.time(),  # Heure de début du jeu
-        large_image="jeu_de_la_vie",  # Image du jeu (si tu en as une)
-        large_text="Jeu De La Vie"  # Texte associé à l'image
-    )
 
 # Fonction pour gérer les commandes du terminal
 def command_listener():
@@ -145,40 +128,11 @@ Commandes disponibles :
             else:
                 print("Activez le mode dieu pour changer la vitesse.")
         
-        # Commande pour ajouter des cellules aléatoires
-        elif command.startswith("!random cells"):
-            if god_mode:
-                try:
-                    count = int(command.split()[-1])
-                    for _ in range(count):
-                        x, y = random.randint(0, COLS-1), random.randint(0, ROWS-1)
-                        grid[y][x] = 1
-                    print(f"{count} cellules aléatoires ajoutées.")
-                except ValueError:
-                    print("Veuillez entrer un nombre valide pour les cellules aléatoires.")
-            else:
-                print("Activez le mode dieu pour ajouter des cellules aléatoires.")
-        
         # Commande pour afficher le nombre de cellules vivantes
         elif command == "!show cells":
             alive_cells = sum(sum(row) for row in grid)
             print(f"Cellules vivantes : {alive_cells}")
 
-        # Commande pour nettoyer la grille
-        elif command == "!clear grid":
-            grid = [[0 for _ in range(COLS)] for _ in range(ROWS)]
-            print("Grille nettoyée.")
-        
-        # Commande pour basculer l'affichage de la grille
-        elif command == "!toggle grid":
-            global GRID_COLOR
-            if GRID_COLOR == (50, 50, 50):
-                GRID_COLOR = (255, 255, 255)  # Couleur blanche pour la grille
-                print("Affichage de la grille activé.")
-            else:
-                GRID_COLOR = (50, 50, 50)  # Couleur grise pour la grille
-                print("Affichage de la grille désactivé.")
-        
         else:
             print("Commande inconnue.")
 
@@ -241,11 +195,7 @@ while running:
     if FPS != 0:
         update_grid()
 
-    # Mise à jour du RPC
-    update_rich_presence()
-
     pygame.display.flip()
     clock.tick(FPS)
 
-rpc.close()  # Ferme la connexion RPC lors de la sortie
 pygame.quit()
